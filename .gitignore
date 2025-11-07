@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+venv/
+env/
+*.egg-info/
+data/raw/*
+data/processed/*
+checkpoints/*.pth
+logs/
+.ipynb_checkpoints/
+.vscode/
+.DS_Store
+*.log
