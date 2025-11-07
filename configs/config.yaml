@@ -1,0 +1,50 @@
+# Main Configuration File
+
+# Data Configuration
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  image_size: [128, 128, 128]  # 3D MRI volume size
+  modalities: ['t1', 't1ce', 't2', 'flair']
+  num_classes: 4
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+
+# Model Configuration
+model:
+  name: "unet"  # Options: unet, attention_unet, resnet_unet
+  in_channels: 4  # Number of MRI modalities
+  out_channels: 4  # Number of segmentation classes
+  features: [32, 64, 128, 256]
+  dropout: 0.1
+
+# Training Configuration
+training:
+  batch_size: 4
+  num_epochs: 100
+  learning_rate: 0.001
+  optimizer: "adam"
+  scheduler: "cosine"
+  early_stopping_patience: 15
+  device: "cuda"  # or "cpu"
+  mixed_precision: true
+  num_workers: 4
+
+# Evaluation
+evaluation:
+  metrics: ['dice', 'hausdorff', 'iou', 'sensitivity', 'specificity']
+  save_predictions: true
+  visualize: true
+
+# Paths
+paths:
+  checkpoints: "checkpoints"
+  logs: "logs"
+  results: "results"
+
+# Logging
+logging:
+  use_tensorboard: true
+  use_wandb: false
+  log_interval: 10
