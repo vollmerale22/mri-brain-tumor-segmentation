@@ -7,7 +7,7 @@ import nibabel as nib
 from pathlib import Path
 from tqdm import tqdm
 
-def generate_synthetic_mri(output_dir, num_samples=10):
+def generate_synthetic_mri(output_dir, num_samples=20):
     """
     Generate synthetic MRI data that mimics real structure.
     
@@ -21,7 +21,7 @@ def generate_synthetic_mri(output_dir, num_samples=10):
     print("Generating Synthetic MRI Data")
     print("="*60)
     
-    # Image dimensions
+    # Image dimensions (smaller for faster generation)
     depth, height, width = 128, 128, 128
     
     for i in tqdm(range(num_samples), desc="Creating samples"):
@@ -48,8 +48,10 @@ def generate_synthetic_mri(output_dir, num_samples=10):
         save_nifti(seg, patient_dir / "seg.nii.gz")
     
     print(f"\n✓ Generated {num_samples} synthetic MRI samples")
-    print(f"Location: {output_dir}")
-    print("\nYou can now test your pipeline with this data!")
+    print(f"✓ Location: {output_dir}")
+    print(f"✓ Total size: ~{num_samples * 20}MB")
+    print("\nYou can now use this data to test your pipeline!")
+
 
 def create_brain_mask(depth, height, width):
     """Create a realistic brain-shaped mask"""
@@ -63,63 +65,82 @@ def create_brain_mask(depth, height, width):
     
     return mask.astype(float)
 
+
 def generate_modality(brain_mask, contrast='t1'):
     """Generate MRI modality with specific contrast"""
     
-    # Base intensity
-    if contrast == 't1':
-        base_intensity = 100
-    elif contrast == 't1ce':
-        base_intensity = 120
-    elif contrast == 't2':
-        base_intensity = 150
-    else:  # flair
-        base_intensity = 130
+    # Base intensity varies by modality
+    intensity_map = {
+        't1': 100,
+        't1ce': 120,
+        't2': 150,
+        'flair': 130
+    }
     
-    # Create image
-    image = np.random.randn(*brain_mask.shape) * 10 + base_intensity
+    base_intensity = intensity_map.get(contrast, 100)
+    
+    # Create image with noise
+    image = np.random.randn(*brain_mask.shape) * 15 + base_intensity
     image = image * brain_mask  # Apply brain mask
     image = np.maximum(image, 0)  # No negative values
     
-    # Add some texture
-    from scipy.ndimage import gaussian_filter
-    image = gaussian_filter(image, sigma=2)
+    # Add smooth texture (requires scipy)
+    try:
+        from scipy.ndimage import gaussian_filter
+        image = gaussian_filter(image, sigma=1.5)
+    except ImportError:
+        pass  # Skip smoothing if scipy not available
     
     return image.astype(np.float32)
 
+
 def generate_tumor_segmentation(depth, height, width):
-    """Generate random tumor segmentation"""
+    """Generate random tumor segmentation with realistic structure"""
     seg = np.zeros((depth, height, width), dtype=np.uint8)
     
-    # Random tumor location
-    center_z = np.random.randint(depth//4, 3*depth//4)
-    center_y = np.random.randint(height//4, 3*height//4)
-    center_x = np.random.randint(width//4, 3*width//4)
+    # Random tumor location (avoid edges)
+    center_z = np.random.randint(depth//3, 2*depth//3)
+    center_y = np.random.randint(height//3, 2*height//3)
+    center_x = np.random.randint(width//3, 2*width//3)
     
     z, y, x = np.ogrid[:depth, :height, :width]
     
-    # Enhancing tumor (class 3)
-    radius_enh = np.random.randint(8, 15)
-    mask_enh = ((z - center_z)**2 + (y - center_y)**2 + (x - center_x)**2) <= radius_enh**2
-    seg[mask_enh] = 3
+    # Create distance from center
+    dist = np.sqrt((z - center_z)**2 + (y - center_y)**2 + (x - center_x)**2)
     
-    # Edema (class 2)
-    radius_edema = radius_enh + np.random.randint(5, 10)
-    mask_edema = ((z - center_z)**2 + (y - center_y)**2 + (x - center_x)**2) <= radius_edema**2
-    seg[mask_edema & ~mask_enh] = 2
+    # Enhancing tumor (class 3) - innermost
+    radius_enh = np.random.randint(5, 12)
+    seg[dist <= radius_enh] = 3
     
-    # Necrotic core (class 1)
-    radius_nec = radius_enh // 2
-    mask_nec = ((z - center_z)**2 + (y - center_y)**2 + (x - center_x)**2) <= radius_nec**2
-    seg[mask_nec] = 1
+    # Necrotic core (class 1) - very center
+    radius_nec = radius_enh * 0.4
+    seg[dist <= radius_nec] = 1
+    
+    # Edema (class 2) - surrounding
+    radius_edema = radius_enh + np.random.randint(8, 15)
+    seg[(dist > radius_enh) & (dist <= radius_edema)] = 2
     
     return seg
 
+
 def save_nifti(data, filepath):
     """Save numpy array as NIfTI file"""
-    nifti_img = nib.Nifti1Image(data, affine=np.eye(4))
+    # Create simple affine matrix (identity with 1mm spacing)
+    affine = np.eye(4)
+    
+    nifti_img = nib.Nifti1Image(data, affine=affine)
     nib.save(nifti_img, filepath)
 
+
 if __name__ == "__main__":
-    # Generate 20 synthetic samples
-    generate_synthetic_mri("data/raw/synthetic", num_samples=20)
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Generate synthetic MRI data')
+    parser.add_argument('--output', type=str, default='data/raw/synthetic',
+                        help='Output directory for synthetic data')
+    parser.add_argument('--num_samples', type=int, default=20,
+                        help='Number of samples to generate')
+    
+    args = parser.parse_args()
+    
+    generate_synthetic_mri(args.output, args.num_samples)
