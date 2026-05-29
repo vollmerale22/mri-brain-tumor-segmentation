@@ -1,0 +1,11 @@
+{
+  "best_val_dice": 0.8507479977607727,
+  "final_train_loss": 0.10232973567725438,
+  "final_val_loss": 0.08727699741721154,
+  "epochs": 25,
+  "n_train": 3144,
+  "n_val": 785,
+  "model_params": 31037633,
+  "device": "cuda",
+  "training_time_minutes": 73.7
+}
