@@ -1,0 +1,24 @@
+# Dataset
+data_dir: data/raw/kaggle_3m
+image_size: 256
+
+# Model
+in_channels: 3
+out_channels: 1
+features: [64, 128, 256, 512]
+
+# Training
+batch_size: 16
+epochs: 25
+learning_rate: 0.0001
+weight_decay: 0.0001
+num_workers: 2
+val_split: 0.2
+seed: 42
+
+# Loss
+dice_weight: 0.5
+
+# Output
+checkpoint_path: checkpoints/best_model.pt
+results_dir: results

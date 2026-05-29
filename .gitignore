@@ -1,13 +1,35 @@
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
 venv/
 env/
-*.egg-info/
-data/raw/*
-data/processed/*
-checkpoints/*.pth
-logs/
-.ipynb_checkpoints/
+.venv/
+
+# Data and model checkpoints (large files)
+data/
+checkpoints/
+*.pt
+*.pth
+
+# Results - keep the json summaries but not unnecessary outputs
+results/*.npy
+results/raw/
+
+# IDE
 .vscode/
+.idea/
+*.swp
 .DS_Store
-*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Kaggle
+kaggle.json
