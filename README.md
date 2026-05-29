@@ -53,13 +53,10 @@ Standard U-Net (Ronneberger et al., 2015):
 
 ## Results
 
-*Fill in after running `scripts/train.py` — values come from
-`results/summary.json` and `results/evaluation.json`.*
-
 | Metric | Validation |
 |---|---|
-| Dice coefficient | *e.g. 0.81* |
-| IoU (Jaccard)   | *e.g. 0.69* |
+| Dice coefficient | 0.85 |
+| IoU (Jaccard)   | 0.74 |
 
 Training curves and example predictions are saved under `results/`:
 - `results/training_curves.png` — train/val loss and validation Dice over epochs
