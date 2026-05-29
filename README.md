@@ -49,7 +49,7 @@ Standard U-Net (Ronneberger et al., 2015):
 | Scheduler | ReduceLROnPlateau (factor 0.5, patience 3) |
 | Loss | 0.5 · Dice + 0.5 · BCEWithLogits |
 | Augmentation | Horizontal/vertical flip, ±35° rotation |
-| Hardware | *fill in after training (e.g. Google Colab T4 GPU)* |
+| Hardware | Google Colab T4 GPU |
 
 ## Results
 
